@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/Main Menu.unity
+    guid: b3f4193ff9c0aa246adf1c95fc5b732e
+  - enabled: 1
+    path: Assets/Scenes/Select Level.unity
+    guid: 813e8e4ae76814540bc35974c3c7dcd8
+  - enabled: 1
+    path: Assets/Scenes/Nasi Lemak Level.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   m_configObjects: {}
