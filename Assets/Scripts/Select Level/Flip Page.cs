@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI; //To use Unity UI e.g button
 using System; //to use the date time 
 
+
 public class FlipPage : MonoBehaviour
 {
     private enum ButtonType
@@ -13,9 +14,16 @@ public class FlipPage : MonoBehaviour
     }
     [SerializeField] Button nextButton; //declare Next Button
     [SerializeField] Button previousButton; //Declare Previous Button
+    //[SerializeField] Button closeButton; //Declare Previous Button
 
-     [SerializeField] AudioSource audioSFX; //declare audiosource
+    [SerializeField] AudioSource audioSFX; //declare audiosource
     [SerializeField] AudioClip flipBook; //declare the file to play the sound
+
+    [SerializeField] Button closeButton;
+
+    //[SerializeField] GameObject openedBook;
+    // [SerializeField] GameObject insideBackCover;
+
     private Vector3 rotationVector; //declare variable to rotate objects
 
     private Vector3 startPosition;
@@ -25,6 +33,8 @@ public class FlipPage : MonoBehaviour
 
     private DateTime startTime; //to get start time
     private DateTime endTime; //to get end time
+
+    
 
     // Start is called before the first frame update
     void Start()
@@ -40,6 +50,10 @@ public class FlipPage : MonoBehaviour
         {
             previousButton.onClick.AddListener(() => turnOnePageButton_Click(ButtonType.PreviousButton));
         }
+         if (closeButton != null)
+        {
+            closeButton.onClick.AddListener(() => closeButton_Click());
+        } 
     }
 
     // Update is called once per frame
@@ -65,6 +79,7 @@ public class FlipPage : MonoBehaviour
         if (type == ButtonType.NextButton)
         {
             rotationVector = new Vector3(0, 180, 0);
+
         }
         else
         if (type == ButtonType.PreviousButton)
@@ -82,6 +97,11 @@ public class FlipPage : MonoBehaviour
         {
             audioSFX.PlayOneShot(flipBook); //only play the sound once
         }
+    }
+
+    private void closeButton_Click()
+    {
+        AppEvents.CloseBookFunction();
     }
     
 }
