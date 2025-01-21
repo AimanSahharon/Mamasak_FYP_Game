@@ -14,6 +14,14 @@ public class SelectLevel : MonoBehaviour
     {
         SceneManager.LoadSceneAsync("Nasi Lemak Level");
     }
+    public void ToRotiCanaiLevel()
+    {
+        SceneManager.LoadSceneAsync("Roti Canai Level");
+    }
+    public void ToCharKwayTeowLevel()
+    {
+        SceneManager.LoadSceneAsync("Char Kway Teow Level");
+    }
 
 
 }
