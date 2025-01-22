@@ -51,6 +51,8 @@ public class CustomerSpawner : MonoBehaviour
     }
 } */
 
+
+/*
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -193,5 +195,333 @@ public class CustomerSpawner : MonoBehaviour
 
 
 
+} */
+
+/*
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CustomerSpawner : MonoBehaviour
+{
+    [SerializeField] private GameObject[] characters; // Array of characters to spawn
+    [SerializeField] private Transform tablePosition; // Target table position
+    [SerializeField] private float animationSpeed = 2f; // Speed of animation
+    [SerializeField] private GameObject[] speechBubbleVariants; // Array of speech bubble variants
+    [SerializeField] private Transform speechBubbleOffset; // Offset position for the speech bubble
+    [SerializeField] private float fadeInDuration = 1f; // Duration for the fade-in animation
+
+    private GameObject currentCharacter;
+    private GameObject currentSpeechBubble;
+
+    private void Start()
+    {
+        SpawnRandomCharacter();
+    }
+
+    public void SpawnRandomCharacter()
+    {
+        // Ensure there's no previously spawned character
+        if (currentCharacter != null)
+        {
+            Destroy(currentCharacter);
+        }
+        if (currentSpeechBubble != null)
+        {
+            Destroy(currentSpeechBubble);
+        }
+
+        // Pick a random character from the array
+        int randomIndex = Random.Range(0, characters.Length);
+        GameObject selectedCharacter = characters[randomIndex];
+
+        // Instantiate the character at the spawner's position
+        currentCharacter = Instantiate(selectedCharacter, transform.position, Quaternion.identity);
+
+        // Animate the character to the table
+        StartCoroutine(AnimateToTable(currentCharacter));
+    }
+
+    private IEnumerator AnimateToTable(GameObject character)
+    {
+        while (Vector2.Distance(character.transform.position, tablePosition.position) > 0.01f)
+        {
+            character.transform.position = Vector2.MoveTowards(
+                character.transform.position,
+                tablePosition.position,
+                animationSpeed * Time.deltaTime
+            );
+            yield return null;
+        }
+
+        character.transform.position = tablePosition.position; // Ensure it snaps to the position
+
+        // Spawn and fade in the speech bubble
+        SpawnSpeechBubble(character);
+    }
+
+    private void SpawnSpeechBubble(GameObject character)
+    {
+        // Pick a random speech bubble variant
+        int randomIndex = Random.Range(0, speechBubbleVariants.Length);
+        GameObject selectedSpeechBubble = speechBubbleVariants[randomIndex];
+
+        // Instantiate the speech bubble next to the character
+        Vector3 bubblePosition = character.transform.position + (speechBubbleOffset != null ? speechBubbleOffset.position : Vector3.up);
+        currentSpeechBubble = Instantiate(selectedSpeechBubble, bubblePosition, Quaternion.identity);
+
+        // Set initial transparency to 0
+        CanvasGroup bubbleCanvasGroup = currentSpeechBubble.GetComponent<CanvasGroup>();
+        if (bubbleCanvasGroup != null)
+        {
+            bubbleCanvasGroup.alpha = 0;
+            StartCoroutine(FadeInSpeechBubble(bubbleCanvasGroup));
+        }
+    }
+
+    private IEnumerator FadeInSpeechBubble(CanvasGroup canvasGroup)
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeInDuration)
+        {
+            canvasGroup.alpha = Mathf.Lerp(0, 1, elapsedTime / fadeInDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        canvasGroup.alpha = 1; // Ensure full opacity
+    }
+} */
+
+/* V3
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CustomerSpawner : MonoBehaviour
+{
+    [SerializeField] private GameObject[] characters; // Array of characters to spawn
+    [SerializeField] private Transform tablePosition; // Target table position
+    [SerializeField] private float animationSpeed = 2f; // Speed of animation
+    [SerializeField] private GameObject[] speechBubbleVariants; // Array of speech bubble variants
+    [SerializeField] private Transform speechBubbleOffset; // Offset position for the speech bubble
+    [SerializeField] private float fadeInDuration = 1f; // Duration for the fade-in animation
+
+    private GameObject currentCharacter;
+    private GameObject currentSpeechBubble;
+
+    private int lastBubbleIndex = -1; // Track the last spawned bubble
+    private int repeatCount = 0; // Count of consecutive same bubbles
+
+    private void Start()
+    {
+        SpawnRandomCharacter();
+    }
+
+    public void SpawnRandomCharacter()
+    {
+        // Ensure there's no previously spawned character
+        if (currentCharacter != null)
+        {
+            Destroy(currentCharacter);
+        }
+        if (currentSpeechBubble != null)
+        {
+            Destroy(currentSpeechBubble);
+        }
+
+        // Pick a random character from the array
+        int randomIndex = Random.Range(0, characters.Length);
+        GameObject selectedCharacter = characters[randomIndex];
+
+        // Instantiate the character at the spawner's position
+        currentCharacter = Instantiate(selectedCharacter, transform.position, Quaternion.identity);
+
+        // Animate the character to the table
+        StartCoroutine(AnimateToTable(currentCharacter));
+    }
+
+    private IEnumerator AnimateToTable(GameObject character)
+    {
+        while (Vector2.Distance(character.transform.position, tablePosition.position) > 0.01f)
+        {
+            character.transform.position = Vector2.MoveTowards(
+                character.transform.position,
+                tablePosition.position,
+                animationSpeed * Time.deltaTime
+            );
+            yield return null;
+        }
+
+        character.transform.position = tablePosition.position; // Ensure it snaps to the position
+
+        // Spawn and fade in the speech bubble
+        SpawnSpeechBubble(character);
+    }
+
+    private void SpawnSpeechBubble(GameObject character)
+    {
+        // Pick a random speech bubble variant, ensuring no repeats for 3 consecutive times
+        int randomIndex;
+        do
+        {
+            randomIndex = Random.Range(0, speechBubbleVariants.Length);
+        } while (randomIndex == lastBubbleIndex && repeatCount >= 2);
+
+        // Update repeat tracking
+        if (randomIndex == lastBubbleIndex)
+        {
+            repeatCount++;
+        }
+        else
+        {
+            repeatCount = 0;
+        }
+        lastBubbleIndex = randomIndex;
+
+        GameObject selectedSpeechBubble = speechBubbleVariants[randomIndex];
+
+        // Instantiate the speech bubble next to the character
+        Vector3 bubblePosition = character.transform.position + (speechBubbleOffset != null ? speechBubbleOffset.position : Vector3.up);
+        currentSpeechBubble = Instantiate(selectedSpeechBubble, bubblePosition, Quaternion.identity);
+
+        // Set initial transparency to 0
+        CanvasGroup bubbleCanvasGroup = currentSpeechBubble.GetComponent<CanvasGroup>();
+        if (bubbleCanvasGroup != null)
+        {
+            bubbleCanvasGroup.alpha = 0;
+            StartCoroutine(FadeInSpeechBubble(bubbleCanvasGroup));
+        }
+    }
+
+    private IEnumerator FadeInSpeechBubble(CanvasGroup canvasGroup)
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeInDuration)
+        {
+            canvasGroup.alpha = Mathf.Lerp(0, 1, elapsedTime / fadeInDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        canvasGroup.alpha = 1; // Ensure full opacity
+    }
+} */
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CustomerSpawner : MonoBehaviour
+{
+    [SerializeField] private GameObject[] characters; // Array of characters to spawn
+    [SerializeField] private Transform tablePosition; // Target table position
+    [SerializeField] private float animationSpeed = 2f; // Speed of animation
+    [SerializeField] private GameObject[] speechBubbleVariants; // Array of speech bubble variants
+    [SerializeField] private Transform speechBubbleOffset; // Offset position for the speech bubble
+    [SerializeField] private float fadeInDuration = 1f; // Duration for the fade-in animation
+
+    private GameObject currentCharacter;
+    private GameObject currentSpeechBubble;
+
+    private int lastBubbleIndex = -1; // Track the last spawned bubble
+    private int repeatCount = 0; // Count of consecutive same bubbles
+
+    private void Start()
+    {
+        SpawnRandomCharacter();
+    }
+
+    public void SpawnRandomCharacter()
+    {
+        // Ensure there's no previously spawned character
+        if (currentCharacter != null)
+        {
+            Destroy(currentCharacter);
+        }
+        if (currentSpeechBubble != null)
+        {
+            Destroy(currentSpeechBubble);
+        }
+
+        // Pick a random character from the array
+        int randomIndex = Random.Range(0, characters.Length);
+        GameObject selectedCharacter = characters[randomIndex];
+
+        // Instantiate the character at the spawner's position
+        currentCharacter = Instantiate(selectedCharacter, transform.position, Quaternion.identity);
+
+        // Animate the character to the table
+        StartCoroutine(AnimateToTable(currentCharacter));
+    }
+
+    private IEnumerator AnimateToTable(GameObject character)
+    {
+        while (Vector2.Distance(character.transform.position, tablePosition.position) > 0.01f)
+        {
+            character.transform.position = Vector2.MoveTowards(
+                character.transform.position,
+                tablePosition.position,
+                animationSpeed * Time.deltaTime
+            );
+            yield return null;
+        }
+
+        character.transform.position = tablePosition.position; // Ensure it snaps to the position
+
+        // Spawn and fade in the speech bubble
+        SpawnSpeechBubble(character);
+    }
+
+    private void SpawnSpeechBubble(GameObject character)
+    {
+        // Pick a random speech bubble variant, ensuring no repeats for 3 consecutive times
+        int randomIndex;
+        do
+        {
+            randomIndex = Random.Range(0, speechBubbleVariants.Length);
+        } while (randomIndex == lastBubbleIndex && repeatCount >= 2);
+
+        // Update repeat tracking
+        if (randomIndex == lastBubbleIndex)
+        {
+            repeatCount++;
+        }
+        else
+        {
+            repeatCount = 0;
+        }
+        lastBubbleIndex = randomIndex;
+
+        GameObject selectedSpeechBubble = speechBubbleVariants[randomIndex];
+
+        // Instantiate the speech bubble next to the character
+        Vector3 bubblePosition = character.transform.position + (speechBubbleOffset != null ? speechBubbleOffset.position : Vector3.up);
+        currentSpeechBubble = Instantiate(selectedSpeechBubble, bubblePosition, Quaternion.identity);
+
+        // Set initial transparency to 0
+        CanvasGroup bubbleCanvasGroup = currentSpeechBubble.GetComponent<CanvasGroup>();
+        if (bubbleCanvasGroup != null)
+        {
+            bubbleCanvasGroup.alpha = 0;
+            StartCoroutine(FadeInSpeechBubble(bubbleCanvasGroup));
+        }
+    }
+
+    private IEnumerator FadeInSpeechBubble(CanvasGroup canvasGroup)
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeInDuration)
+        {
+            canvasGroup.alpha = Mathf.Lerp(0, 1, elapsedTime / fadeInDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        canvasGroup.alpha = 1; // Ensure full opacity
+    }
 }
+
+
+
+
+
+
 

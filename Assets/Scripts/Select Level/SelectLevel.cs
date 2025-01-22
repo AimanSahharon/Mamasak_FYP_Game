@@ -22,6 +22,10 @@ public class SelectLevel : MonoBehaviour
     {
         SceneManager.LoadSceneAsync("Char Kway Teow Level");
     }
+     public void ToServeLevel()
+    {
+        SceneManager.LoadSceneAsync("Serve Level");
+    }
 
 
 }

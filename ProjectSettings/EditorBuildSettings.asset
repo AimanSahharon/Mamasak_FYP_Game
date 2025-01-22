@@ -20,4 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Char Kway Teow Level.unity
     guid: a841653bdb23fff47924f9dc562be75a
+  - enabled: 1
+    path: Assets/Scenes/Serve Level.unity
+    guid: 7fc671e358517584cb154770975afa3f
   m_configObjects: {}
