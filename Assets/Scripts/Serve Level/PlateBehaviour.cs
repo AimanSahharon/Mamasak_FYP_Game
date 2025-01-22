@@ -49,6 +49,7 @@ public class PlateBehaviour : MonoBehaviour
     }
 } */
 
+/*V3
 using UnityEngine;
 
 public class PlateBehaviour : MonoBehaviour
@@ -63,5 +64,19 @@ public class PlateBehaviour : MonoBehaviour
             // Your logic here using currentObjectB
         }
     }
-}
+} */
+using UnityEngine;
 
+public class PlateBehaviour : MonoBehaviour
+{
+    public ObjectSpawner objectSpawner;  // Reference to ObjectSpawner
+
+    void Start()
+    {
+        if (objectSpawner != null)
+        {
+            GameObject currentObjectB = objectSpawner.currentObjectB;  // Access currentObjectB
+            // Your logic here using currentObjectB
+        }
+    }
+} 

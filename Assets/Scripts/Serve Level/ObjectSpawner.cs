@@ -702,67 +702,73 @@ public class ObjectSpawner : MonoBehaviour
     private bool isSnapped = false; // Flag to check if Object B has snapped
 
     void Update()
+{
+    // Check if the plate is full
+    if (plate.objectsOnPlate.Count >= 6)
     {
-        // Check if the plate is full
-        if (plate.objectsOnPlate.Count >= 6)
+        Debug.Log("Plate is full. Cannot attach more objects.");
+    }
+    else
+    {
+        // Check for the left mouse button click
+        if (Input.GetMouseButtonDown(0)) // Left mouse button click
         {
-            Debug.Log("Plate is full. Cannot attach more objects.");
-        }
-        else
-        {
-            // Check for the left mouse button click
-            if (Input.GetMouseButtonDown(0)) // Left mouse button click
+            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            if (hit.collider != null && hit.collider.gameObject == gameObject)
             {
-                RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-                if (hit.collider != null && hit.collider.gameObject == gameObject)
+                if (currentObjectB != null && !isSnapped)
                 {
-                    if (currentObjectB != null && !isSnapped)
-                    {
-                        Destroy(currentObjectB);
-                    }
-
-                    if (currentObjectB == null || isSnapped)
-                    {
-                        Vector3 spawnPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                        spawnPosition.z = 0;
-                        currentObjectB = Instantiate(objectBPrefab, spawnPosition, Quaternion.identity);
-                        isSnapped = false;
-                    }
+                    Destroy(currentObjectB);
                 }
-            }
 
-            // Allow dragging the spawned Object B
-            if (currentObjectB != null && !isSnapped)
-            {
-                Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                mousePosition.z = 0;
-                currentObjectB.transform.position = mousePosition;
-            }
-
-            // Check for collision and snap Object B to plate
-            if (currentObjectB != null && plate != null && !isSnapped)
-            {
-                if (IsObjectBOnPlate(currentObjectB))
+                if (currentObjectB == null || isSnapped)
                 {
-                    Vector3 snapPosition = plate.GetClosestSnapPoint(currentObjectB.transform.position);
-                    currentObjectB.transform.position = snapPosition;
-                    isSnapped = true;
-
-                    plate.SetSnappedPosition(snapPosition);
-                    plate.objectB = currentObjectB;
-
-                    // Add the object to the plate's list of objects
-                    plate.AddObjectToPlate(currentObjectB);
+                    Vector3 spawnPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    spawnPosition.z = 0;
+                    currentObjectB = Instantiate(objectBPrefab, spawnPosition, Quaternion.identity);
+                    isSnapped = false;
                 }
             }
         }
 
-        // Clear the plate when the S key is pressed
-        if (Input.GetKeyDown(KeyCode.S)) // Detect the S key press
+        // Allow dragging the spawned Object B
+        if (currentObjectB != null && !isSnapped)
         {
-            ClearPlate();
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mousePosition.z = 0;
+            currentObjectB.transform.position = mousePosition;
+        }
+
+        // Check for collision and snap Object B to plate
+        if (currentObjectB != null && plate != null && !isSnapped)
+        {
+            if (IsObjectBOnPlate(currentObjectB))
+            {
+                Vector3 snapPosition = plate.GetClosestSnapPoint(currentObjectB.transform.position);
+                currentObjectB.transform.position = snapPosition;
+                isSnapped = true;
+
+                plate.SetSnappedPosition(snapPosition);
+                plate.objectB = currentObjectB;
+
+                // Add the object to the plate's list of objects
+                plate.AddObjectToPlate(currentObjectB);
+            }
         }
     }
+
+    // Clear the plate when the S key is pressed
+    if (Input.GetKeyDown(KeyCode.S)) // Detect the S key press
+    {
+        if (currentObjectB != null && !isSnapped)
+        {
+            // Make the object disappear (destroy it)
+            Destroy(currentObjectB);
+        }
+        ClearPlate(); // Clear objects on the plate
+    }
+}
+
 
     // Check if the object is on the plate
     private bool IsObjectBOnPlate(GameObject objectB)
@@ -786,9 +792,14 @@ public class ObjectSpawner : MonoBehaviour
             Debug.Log("Plate cleared.");
         }
     }
-} */
+}*/
 
+
+/* V4
 using UnityEngine;
+using System.Linq;
+
+using System.Collections.Generic;  // Add this to fix the List<> errors
 
 public class ObjectSpawner : MonoBehaviour
 {
@@ -856,9 +867,226 @@ public class ObjectSpawner : MonoBehaviour
         // Clear the plate when the S key is pressed
         if (Input.GetKeyDown(KeyCode.S)) // Detect the S key press
         {
-            ClearPlate();
+            if (currentObjectB != null && !isSnapped)
+            {
+                // Make the object disappear (destroy it)
+                Destroy(currentObjectB);
+            }
+            ClearPlate(); // Clear objects on the plate
+        }
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            ValidateOrder();
         }
     }
+
+    private void ValidateOrder()
+{
+    bool hasOnlyRotiCanai = plate.objectsOnPlate.Count == 1 && plate.objectsOnPlate[0].name.Contains("roti_canai");
+    
+    if (hasOnlyRotiCanai)
+    {
+        Debug.Log("right order");
+        CustomerSpawner customerSpawner = FindObjectOfType<CustomerSpawner>();
+        if (customerSpawner != null)
+        {
+            customerSpawner.RemoveCustomerAndSpeechBubble();
+        }
+    }
+    else
+    {
+        Debug.Log("wrong order");
+    }
+}
+
+    // Check if the object is on the plate
+    private bool IsObjectBOnPlate(GameObject objectB)
+    {
+        if (plate == null) return false;
+        return plate.GetComponent<Collider2D>().bounds.Contains(objectB.transform.position);
+    }
+
+    // Clear the plate of all objects
+    private void ClearPlate()
+    {
+        if (plate != null)
+        {
+            // Call PlateHover to clear all objects
+            plate.ClearAllObjects();
+
+            // Reset the state
+            currentObjectB = null;
+            isSnapped = false;
+
+            Debug.Log("Plate cleared.");
+        }
+    }
+} */
+
+using UnityEngine;
+using System.Collections.Generic;  // Add this to fix the List<> errors
+
+public class ObjectSpawner : MonoBehaviour
+{
+    public GameObject objectBPrefab; // Assign the Object B prefab
+    public GameObject currentObjectB;
+    public PlateHover plate; // Reference to PlateHover script
+    private bool isSnapped = false; // Flag to check if Object B has snapped
+
+    void Update()
+    {
+        // Check if the plate is full
+        if (plate.objectsOnPlate.Count >= 6)
+        {
+            Debug.Log("Plate is full. Cannot attach more objects.");
+        }
+        else
+        {
+            // Check for the left mouse button click
+            if (Input.GetMouseButtonDown(0)) // Left mouse button click
+            {
+                RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                if (hit.collider != null && hit.collider.gameObject == gameObject)
+                {
+                    if (currentObjectB != null && !isSnapped)
+                    {
+                        Destroy(currentObjectB);
+                    }
+
+                    if (currentObjectB == null || isSnapped)
+                    {
+                        Vector3 spawnPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                        spawnPosition.z = 0;
+                        currentObjectB = Instantiate(objectBPrefab, spawnPosition, Quaternion.identity);
+                        isSnapped = false;
+                    }
+                }
+            }
+
+            // Allow dragging the spawned Object B
+            if (currentObjectB != null && !isSnapped)
+            {
+                Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                mousePosition.z = 0;
+                currentObjectB.transform.position = mousePosition;
+            }
+
+            // Check for collision and snap Object B to plate
+            if (currentObjectB != null && plate != null && !isSnapped)
+            {
+                if (IsObjectBOnPlate(currentObjectB))
+                {
+                    Vector3 snapPosition = plate.GetClosestSnapPoint(currentObjectB.transform.position);
+                    currentObjectB.transform.position = snapPosition;
+                    isSnapped = true;
+
+                    plate.SetSnappedPosition(snapPosition);
+                    plate.objectB = currentObjectB;
+
+                    // Add the object to the plate's list of objects
+                    plate.AddObjectToPlate(currentObjectB);
+                }
+            }
+        }
+
+        // Clear the plate when the S key is pressed
+        if (Input.GetKeyDown(KeyCode.S)) // Detect the S key press
+        {
+            if (currentObjectB != null && !isSnapped)
+            {
+                // Make the object disappear (destroy it)
+                Destroy(currentObjectB);
+            }
+            ClearPlate(); // Clear objects on the plate
+        }
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            ValidateOrder();
+        }
+    }
+
+    private void ValidateOrder()
+{
+    CustomerSpawner customerSpawner = FindObjectOfType<CustomerSpawner>();
+    if (customerSpawner == null)
+    {
+        Debug.LogError("CustomerSpawner not found.");
+        return;
+    }
+
+    // Check the speech bubble order type
+    string speechBubbleOrder = customerSpawner.currentSpeechBubble.name;
+
+    if (speechBubbleOrder.Contains("order_2"))
+    {
+        // Validate for "order_2" (only roti canai required)
+        if (plate.objectsOnPlate.Count == 1 && plate.objectsOnPlate[0].name.Contains("roti_canai"))
+        {
+            Debug.Log("Right order for Order 2: Roti Canai!");
+            customerSpawner.RemoveCustomerAndSpeechBubble();
+            ClearPlate(); // Clear the plate since the order is correct
+        }
+        else
+        {
+            Debug.Log("Wrong order for Order 2. Plate remains unchanged.");
+        }
+    }
+    else if (speechBubbleOrder.Contains("order_1"))
+    {
+        // Validate for "order_1" (specific items in any order)
+        string[] requiredItems = { "rice", "peanut", "sambal", "anchovies", "cucumber", "egg" };
+
+        // Ensure plate contains exactly the required number of items
+        if (plate.objectsOnPlate.Count != requiredItems.Length)
+        {
+            Debug.Log("Wrong order for Order 1. Incorrect number of items. Plate remains unchanged.");
+            return;
+        }
+
+        // Create a dictionary to count the occurrences of required items
+        Dictionary<string, int> requiredItemCounts = new Dictionary<string, int>();
+        foreach (string item in requiredItems)
+        {
+            requiredItemCounts[item] = 0;
+        }
+
+        // Count items on the plate
+        foreach (GameObject item in plate.objectsOnPlate)
+        {
+            foreach (string requiredItem in requiredItems)
+            {
+                if (item.name.Contains(requiredItem))
+                {
+                    requiredItemCounts[requiredItem]++;
+                    break;
+                }
+            }
+        }
+
+        // Validate if each required item is present exactly once
+        foreach (KeyValuePair<string, int> kvp in requiredItemCounts)
+        {
+            if (kvp.Value != 1)
+            {
+                Debug.Log($"Wrong order for Order 1. {kvp.Key} count is {kvp.Value}, expected 1. Plate remains unchanged.");
+                return;
+            }
+        }
+
+        Debug.Log("Right order for Order 1!");
+        customerSpawner.RemoveCustomerAndSpeechBubble();
+        ClearPlate(); // Clear the plate since the order is correct
+    }
+    else
+    {
+        Debug.Log("Unknown order type. Plate remains unchanged.");
+    }
+}
+
+
+
 
     // Check if the object is on the plate
     private bool IsObjectBOnPlate(GameObject objectB)
@@ -883,4 +1111,3 @@ public class ObjectSpawner : MonoBehaviour
         }
     }
 }
-
