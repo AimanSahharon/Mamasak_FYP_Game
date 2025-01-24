@@ -1918,6 +1918,8 @@ private IEnumerator AnimateCustomerOffscreen(GameObject customer, GameObject rea
 
 } */
 
+
+/* V1
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -2058,6 +2060,209 @@ public class CustomerSpawner : MonoBehaviour
 
    public void RemoveCustomerAndSpeechBubble(bool isOrderCorrect)
 {
+    if (currentSpeechBubble != null)
+    {
+        Destroy(currentSpeechBubble);
+    }
+
+    if (currentCharacter != null)
+    {
+        // Change to reaction bubble
+        GameObject reactionBubble = Instantiate(
+            isOrderCorrect ? customerReactionHappy : customerReactionMad,
+            currentCharacter.transform.position + (speechBubbleOffset != null ? speechBubbleOffset.position : Vector3.up),
+            Quaternion.identity
+        );
+
+        // Animate the customer to the right with consistent speed
+        StartCoroutine(AnimateCustomerOffscreen(currentCharacter, reactionBubble));
+    }
+}
+
+
+private IEnumerator AnimateCustomerOffscreen(GameObject customer, GameObject reactionBubble)
+{
+    // Ensure the customer moves at a consistent speed regardless of the reaction bubble
+    while (Vector2.Distance(customer.transform.position, offscreenPosition.position) > 0.01f)
+    {
+        // Move the customer to the offscreen position
+        customer.transform.position = Vector2.MoveTowards(
+            customer.transform.position,
+            offscreenPosition.position,
+            animationSpeed * Time.deltaTime
+        );
+        
+        // Ensure the reaction bubble follows the customer at the same pace (no added offset or different logic)
+        reactionBubble.transform.position = customer.transform.position + (speechBubbleOffset != null ? speechBubbleOffset.position : Vector3.up);
+
+        yield return null;
+    }
+
+    // After the animation completes, destroy the customer and the reaction bubble
+    Destroy(customer);
+    Destroy(reactionBubble);  // Ensure this removes the mad or happy bubble
+    Debug.Log("Customer and reaction bubble removed.");
+    SpawnRandomCharacter(); // Spawn the next customer
+}
+
+
+
+
+
+} */
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CustomerSpawner : MonoBehaviour
+{
+    [SerializeField] public GameObject[] characters; // Array of characters to spawn
+    [SerializeField] public Transform tablePosition; // Target table position
+    [SerializeField] public float animationSpeed = 2f; // Speed of animation
+    [SerializeField] public GameObject[] speechBubbleVariants; // Array of speech bubble variants
+    [SerializeField] public Transform speechBubbleOffset; // Offset position for the speech bubble
+    [SerializeField] public float fadeInDuration = 1f; // Duration for the fade-in animation
+    [SerializeField] public GameObject customerReactionHappy; // Happy reaction bubble
+    [SerializeField] public GameObject customerReactionMad; // Mad reaction bubble
+    [SerializeField] public Transform offscreenPosition; // Position to move the customer offscreen
+
+    public GameObject currentCharacter;
+    public GameObject currentSpeechBubble;
+
+    public int lastBubbleIndex = -1; // Track the last spawned bubble
+    public int repeatCount = 0; // Count of consecutive same bubbles
+
+    public void Start()
+    {
+        SpawnRandomCharacter();
+    }
+
+    public void SpawnRandomCharacter()
+    {
+        // Ensure there's no previously spawned character
+        if (currentCharacter != null)
+        {
+            Destroy(currentCharacter);
+        }
+        if (currentSpeechBubble != null)
+        {
+            Destroy(currentSpeechBubble);
+        }
+
+        // Pick a random character from the array
+        int randomIndex = Random.Range(0, characters.Length);
+        GameObject selectedCharacter = characters[randomIndex];
+
+        // Instantiate the character at the spawner's position
+        currentCharacter = Instantiate(selectedCharacter, transform.position, Quaternion.identity);
+
+        // Animate the character to the table
+        StartCoroutine(AnimateToTable(currentCharacter));
+    }
+
+    public IEnumerator AnimateToTable(GameObject character)
+{
+    // Check if the character is null at the start
+    if (character == null)
+    {
+        yield break; // Exit early if the character is already destroyed
+    }
+
+    // Loop to move the character towards the table position
+    while (Vector2.Distance(character.transform.position, tablePosition.position) > 0.01f)
+    {
+        // Additional check during the loop to ensure the character is still valid
+        if (character == null)
+        {
+            yield break; // Exit the coroutine if the character is destroyed during the animation
+        }
+
+        character.transform.position = Vector2.MoveTowards(
+            character.transform.position,
+            tablePosition.position,
+            animationSpeed * Time.deltaTime
+        );
+
+        yield return null; // Wait for the next frame
+    }
+
+    // Final check after the loop to ensure character still exists before final placement
+    if (character != null)
+    {
+        character.transform.position = tablePosition.position;
+        SpawnSpeechBubble(character);
+         HappinessBar happinessBar = FindObjectOfType<HappinessBar>();
+        if (happinessBar != null)
+        {
+            happinessBar.ResetTimer();
+            happinessBar.StartTimer();
+        }
+    }
+    else
+    {
+        // If character was destroyed, ensure no further actions are performed
+        Debug.LogWarning("Character was destroyed before reaching the table.");
+    }
+}
+
+
+
+    public void SpawnSpeechBubble(GameObject character)
+    {
+        // Pick a random speech bubble variant, ensuring no repeats for 3 consecutive times
+        int randomIndex;
+        do
+        {
+            randomIndex = Random.Range(0, speechBubbleVariants.Length);
+        } while (randomIndex == lastBubbleIndex && repeatCount >= 2);
+
+        // Update repeat tracking
+        if (randomIndex == lastBubbleIndex)
+        {
+            repeatCount++;
+        }
+        else
+        {
+            repeatCount = 0;
+        }
+        lastBubbleIndex = randomIndex;
+
+        GameObject selectedSpeechBubble = speechBubbleVariants[randomIndex];
+
+        // Instantiate the speech bubble next to the character
+        Vector3 bubblePosition = character.transform.position + (speechBubbleOffset != null ? speechBubbleOffset.position : Vector3.up);
+        currentSpeechBubble = Instantiate(selectedSpeechBubble, bubblePosition, Quaternion.identity);
+
+        // Set initial transparency to 0
+        CanvasGroup bubbleCanvasGroup = currentSpeechBubble.GetComponent<CanvasGroup>();
+        if (bubbleCanvasGroup != null)
+        {
+            bubbleCanvasGroup.alpha = 0;
+            StartCoroutine(FadeInSpeechBubble(bubbleCanvasGroup));
+        }
+    }
+
+    public IEnumerator FadeInSpeechBubble(CanvasGroup canvasGroup)
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeInDuration)
+        {
+            canvasGroup.alpha = Mathf.Lerp(0, 1, elapsedTime / fadeInDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        canvasGroup.alpha = 1; // Ensure full opacity
+    }
+
+   public void RemoveCustomerAndSpeechBubble(bool isOrderCorrect)
+{
+    HappinessBar happinessBar = FindObjectOfType<HappinessBar>();
+    if (happinessBar != null)
+    {
+        happinessBar.PauseTimer();
+    }
+    
     if (currentSpeechBubble != null)
     {
         Destroy(currentSpeechBubble);

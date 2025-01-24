@@ -2172,6 +2172,183 @@ public class ObjectSpawner : MonoBehaviour
     }
 } */
 
+
+/*V1: Fix nasi lemak order validation
+using UnityEngine;
+using System.Collections.Generic;
+
+public class ObjectSpawner : MonoBehaviour
+{
+    public GameObject objectBPrefab; // Assign the Object B prefab
+    public GameObject currentObjectB;
+    public PlateHover plate; // Reference to PlateHover script
+    private bool isSnapped = false; // Flag to check if Object B has snapped
+
+    void Update()
+    {
+        // Check if the plate is full
+        if (plate.objectsOnPlate.Count >= 6)
+        {
+            Debug.Log("Plate is full. Cannot attach more objects.");
+        }
+        else
+        {
+            // Check for the left mouse button click
+            if (Input.GetMouseButtonDown(0))
+            {
+                RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                if (hit.collider != null && hit.collider.gameObject == gameObject)
+                {
+                    if (currentObjectB != null && !isSnapped)
+                    {
+                        Destroy(currentObjectB);
+                    }
+
+                    if (currentObjectB == null || isSnapped)
+                    {
+                        Vector3 spawnPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                        spawnPosition.z = 0;
+                        currentObjectB = Instantiate(objectBPrefab, spawnPosition, Quaternion.identity);
+                        isSnapped = false;
+                    }
+                }
+            }
+
+            // Allow dragging the spawned Object B
+            if (currentObjectB != null && !isSnapped)
+            {
+                Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                mousePosition.z = 0;
+                currentObjectB.transform.position = mousePosition;
+            }
+
+            // Check for collision and snap Object B to plate
+            if (currentObjectB != null && plate != null && !isSnapped)
+            {
+                if (IsObjectBOnPlate(currentObjectB))
+                {
+                    Vector3 snapPosition = plate.GetClosestSnapPoint(currentObjectB.transform.position);
+                    currentObjectB.transform.position = snapPosition;
+                    isSnapped = true;
+
+                    plate.SetSnappedPosition(snapPosition);
+                    plate.objectB = currentObjectB;
+
+                    // Add the object to the plate's list of objects
+                    plate.AddObjectToPlate(currentObjectB);
+                }
+            }
+        }
+
+        // Clear the plate when the S key is pressed
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            if (currentObjectB != null && !isSnapped)
+            {
+                Destroy(currentObjectB);
+            }
+            ClearPlate();
+        }
+
+        // Validate the order when the W key is pressed
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            ValidateOrder();
+        }
+    }
+
+    private void ValidateOrder()
+{
+    CustomerSpawner customerSpawner = FindObjectOfType<CustomerSpawner>();
+    if (customerSpawner == null)
+    {
+        Debug.LogError("CustomerSpawner not found.");
+        return;
+    }
+
+    string speechBubbleOrder = customerSpawner.currentSpeechBubble.name;
+
+    if (plate.objectsOnPlate.Count == 0)
+    {
+        Debug.Log("Validation failed: Plate is empty.");
+        return;
+    }
+
+    if (speechBubbleOrder.Contains("order_2"))
+    {
+        if (plate.objectsOnPlate.Count == 1 && plate.objectsOnPlate[0].name.Contains("roti_canai"))
+        {
+            Debug.Log("Right order for Order 2: Roti Canai!");
+            customerSpawner.RemoveCustomerAndSpeechBubble(true);
+            ClearPlate();
+        }
+        else
+        {
+            Debug.Log("Wrong order for Order 2.");
+            customerSpawner.RemoveCustomerAndSpeechBubble(false);
+        }
+    }
+    else if (speechBubbleOrder.Contains("order_1"))
+{
+    string[] requiredItems = { "rice", "peanut", "sambal", "anchovies", "cucumber", "egg" };
+
+    if (plate.objectsOnPlate.Count != requiredItems.Length)
+    {
+        Debug.Log("Wrong order for Order 1: Incorrect number of items.");
+        customerSpawner.RemoveCustomerAndSpeechBubble(false);
+        return;
+    }
+
+    // Create a list of plate items to check for required items
+    List<string> plateItems = new List<string>();
+    foreach (var item in plate.objectsOnPlate)
+    {
+        plateItems.Add(item.name);
+    }
+
+    // Check if all required items are present on the plate, regardless of order
+    foreach (string requiredItem in requiredItems)
+    {
+        if (!plateItems.Exists(item => item.Contains(requiredItem)))
+        {
+            Debug.Log($"Wrong order for Order 1: Missing {requiredItem}.");
+            customerSpawner.RemoveCustomerAndSpeechBubble(false);
+            return;
+        }
+    }
+
+    Debug.Log("Right order for Order 1!");
+    customerSpawner.RemoveCustomerAndSpeechBubble(true);
+    ClearPlate();
+}
+
+    else
+    {
+        Debug.Log("Unknown order type.");
+    }
+}
+
+
+    private bool IsObjectBOnPlate(GameObject objectB)
+    {
+        if (plate == null) return false;
+        return plate.GetComponent<Collider2D>().bounds.Contains(objectB.transform.position);
+    }
+
+    private void ClearPlate()
+    {
+        if (plate != null)
+        {
+            plate.ClearAllObjects();
+
+            currentObjectB = null;
+            isSnapped = false;
+
+            Debug.Log("Plate cleared.");
+        }
+    }
+} */
+
 using UnityEngine;
 using System.Collections.Generic;
 
