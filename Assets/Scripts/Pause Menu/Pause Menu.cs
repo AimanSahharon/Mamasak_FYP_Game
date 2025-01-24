@@ -21,10 +21,10 @@ public class PauseMenu : MonoBehaviour
 
     public void Restart()
     {
-        //IsPaused = false; // Reset the flag
+        IsPaused = false; // Reset the flag
         //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
-        StopAllCoroutines(); // Ensure no background coroutines are running
+        //StopAllCoroutines(); // Ensure no background coroutines are running
 
     // Reload the current scene
     SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -33,6 +33,6 @@ public class PauseMenu : MonoBehaviour
     public void ToMainMenu()
     {
         IsPaused = false; // Reset the flag
-        SceneManager.LoadSceneAsync("Main Menu");
+        SceneManager.LoadSceneAsync("Main Menu"); 
     }
 }
