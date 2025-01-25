@@ -15171,7 +15171,7 @@ MonoBehaviour:
   plate: {fileID: 8300000, guid: 1470eac0061206c4096ffd6c1d7b5d65, type: 3}
   correct: {fileID: 8300000, guid: 9ba28e5d519dc824d928e39e6e19eede, type: 3}
   wrong: {fileID: 8300000, guid: 9490edaed0657d74c847e03e4d953cc6, type: 3}
-  button: {fileID: 8300000, guid: 1c83525897a96b54a8ea4959cae17516, type: 3}
+  button: {fileID: 8300000, guid: d285876ddeb163943a0ddcce9e29a09f, type: 3}
   pickup: {fileID: 8300000, guid: 35351c6568abf0a41883d0a609be61a2, type: 3}
   delete: {fileID: 8300000, guid: 18b8036dbe2ccb14eb1c852fb94ee405, type: 3}
 --- !u!4 &1693539635

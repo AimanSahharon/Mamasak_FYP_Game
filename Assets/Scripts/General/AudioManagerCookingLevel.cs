@@ -7,9 +7,10 @@ public class AudioManagerCookingLevel : MonoBehaviour
     [Header("------- Audio Source ---------")]
 
     [SerializeField] AudioSource musicSource;
-    //[SerializeField] AudioSource SFXSource;
+    [SerializeField] AudioSource SFXSource;
     [Header("------- Audio Clip ---------")]
     public AudioClip background;
+    public AudioClip button;
 
 
     private void Start()
@@ -18,10 +19,10 @@ public class AudioManagerCookingLevel : MonoBehaviour
         musicSource.Play();
     }
 
-   /* public void PlaySFX(AudioClip clip)
+    public void PlaySFX(AudioClip clip)
     {
         SFXSource.PlayOneShot(clip);
-    } */
+    } 
 
 
 
