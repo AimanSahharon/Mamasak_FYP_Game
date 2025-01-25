@@ -419,6 +419,98 @@ public class HappinessBar : MonoBehaviour
     }
 } */
 
+/*V2: Working Happiness Bar
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class HappinessBar : MonoBehaviour
+{
+    public Slider happinessSlider; // Assign via Inspector
+    public float sliderTimer = 60f; // Duration for the slider
+    private bool stopTimer = true; // Start with the timer stopped
+
+    void Start()
+    {
+        if (happinessSlider == null)
+        {
+            Debug.LogError("Happiness Slider is not assigned in the Inspector!");
+            return;
+        }
+
+        InitializeSlider();
+    }
+
+    private void InitializeSlider()
+    {
+        // Initialize slider values
+        happinessSlider.maxValue = sliderTimer;
+        happinessSlider.value = sliderTimer;
+    }
+
+    IEnumerator TimerTicker()
+    {
+        while (!stopTimer && sliderTimer > 0)
+        {
+            sliderTimer -= Time.deltaTime; // Decrease timer
+            happinessSlider.value = sliderTimer; // Update slider value
+            UpdateSliderColor(); // Update slider color based on value
+            yield return null;
+        }
+
+        if (sliderTimer <= 0)
+        {
+            Debug.Log("Order failed: Happiness bar reached zero.");
+            CustomerSpawner customerSpawner = FindObjectOfType<CustomerSpawner>();
+            if (customerSpawner != null)
+            {
+                customerSpawner.RemoveCustomerAndSpeechBubble(false); // Treat as wrong order
+            }
+        }
+    }
+
+    private void UpdateSliderColor()
+    {
+        if (happinessSlider.fillRect == null) return;
+
+        Image fillImage = happinessSlider.fillRect.GetComponent<Image>();
+        if (fillImage == null) return;
+
+        float percentage = happinessSlider.value / happinessSlider.maxValue;
+
+        if (percentage <= 0.2f)
+        {
+            fillImage.color = Color.red; // Danger zone
+        }
+        else if (percentage <= 0.5f)
+        {
+            fillImage.color = Color.yellow; // Warning zone
+        }
+        else
+        {
+            fillImage.color = Color.green; // Safe zone
+        }
+    }
+
+    public void StartTimer()
+    {
+        stopTimer = false;
+        StartCoroutine(TimerTicker());
+    }
+
+    public void PauseTimer()
+    {
+        stopTimer = true;
+    }
+
+    public void ResetTimer()
+    {
+        PauseTimer();
+        sliderTimer = happinessSlider.maxValue;
+        happinessSlider.value = sliderTimer;
+    }
+} */
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -509,3 +601,4 @@ public class HappinessBar : MonoBehaviour
         happinessSlider.value = sliderTimer;
     }
 }
+

@@ -2349,6 +2349,7 @@ public class ObjectSpawner : MonoBehaviour
     }
 } */
 
+/*V2: Working happiness bar
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -2518,6 +2519,359 @@ public class ObjectSpawner : MonoBehaviour
 
             currentObjectB = null;
             isSnapped = false;
+
+            Debug.Log("Plate cleared.");
+        }
+    }
+} */
+
+/*
+using UnityEngine;
+using System.Collections.Generic;
+
+public class ObjectSpawner : MonoBehaviour
+{
+    public GameObject objectBPrefab;
+    public GameObject currentObjectB;
+    public PlateHover plate;
+    private bool isSnapped = false;
+
+    void Update()
+    {
+        if (plate.objectsOnPlate.Count >= 6)
+        {
+            Debug.Log("Plate is full. Cannot attach more objects.");
+        }
+        else
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                if (hit.collider != null && hit.collider.gameObject == gameObject)
+                {
+                    if (currentObjectB != null && !isSnapped)
+                    {
+                        Destroy(currentObjectB);
+                    }
+
+                    if (currentObjectB == null || isSnapped)
+                    {
+                        Vector3 spawnPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                        spawnPosition.z = 0;
+                        currentObjectB = Instantiate(objectBPrefab, spawnPosition, Quaternion.identity);
+                        isSnapped = false;
+                    }
+                }
+            }
+
+            if (currentObjectB != null && !isSnapped)
+            {
+                Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                mousePosition.z = 0;
+                currentObjectB.transform.position = mousePosition;
+            }
+
+            if (currentObjectB != null && plate != null && !isSnapped)
+            {
+                if (IsObjectBOnPlate(currentObjectB))
+                {
+                    Vector3 snapPosition = plate.GetClosestSnapPoint(currentObjectB.transform.position);
+                    currentObjectB.transform.position = snapPosition;
+                    isSnapped = true;
+
+                    plate.SetSnappedPosition(snapPosition);
+                    plate.objectB = currentObjectB;
+
+                    plate.AddObjectToPlate(currentObjectB);
+                }
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            if (currentObjectB != null && !isSnapped)
+            {
+                Destroy(currentObjectB);
+            }
+            ClearPlate();
+        }
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            // Use the centralized manager to handle validation
+            ValidationManager.Instance.ValidateOrder(() =>
+            {
+                ValidateOrder();
+            });
+        }
+    }
+
+    private void ValidateOrder()
+    {
+        CustomerSpawner customerSpawner = FindObjectOfType<CustomerSpawner>();
+        if (customerSpawner == null)
+        {
+            Debug.LogError("CustomerSpawner not found.");
+            return;
+        }
+
+        string speechBubbleOrder = customerSpawner.currentSpeechBubble.name;
+
+        if (plate.objectsOnPlate.Count == 0)
+        {
+            Debug.Log("Validation failed: Plate is empty.");
+            return;
+        }
+
+        if (speechBubbleOrder.Contains("order_2"))
+        {
+            if (plate.objectsOnPlate.Count == 1 && plate.objectsOnPlate[0].name.Contains("roti_canai"))
+            {
+                Debug.Log("Right order for Order 2: Roti Canai!");
+                customerSpawner.RemoveCustomerAndSpeechBubble(true);
+                ClearPlate();
+            }
+            else
+            {
+                Debug.Log("Wrong order for Order 2.");
+                customerSpawner.RemoveCustomerAndSpeechBubble(false);
+            }
+        }
+        else if (speechBubbleOrder.Contains("order_1"))
+        {
+            string[] requiredItems = { "rice", "peanut", "sambal", "anchovies", "cucumber", "egg" };
+
+            if (plate.objectsOnPlate.Count != requiredItems.Length)
+            {
+                Debug.Log("Wrong order for Order 1: Incorrect number of items.");
+                customerSpawner.RemoveCustomerAndSpeechBubble(false);
+                return;
+            }
+
+            List<string> plateItems = new List<string>();
+            foreach (var item in plate.objectsOnPlate)
+            {
+                plateItems.Add(item.name);
+            }
+
+            foreach (string requiredItem in requiredItems)
+            {
+                if (!plateItems.Exists(item => item.Contains(requiredItem)))
+                {
+                    Debug.Log($"Wrong order for Order 1: Missing {requiredItem}.");
+                    customerSpawner.RemoveCustomerAndSpeechBubble(false);
+                    return;
+                }
+            }
+
+            Debug.Log("Right order for Order 1!");
+            customerSpawner.RemoveCustomerAndSpeechBubble(true);
+            ClearPlate();
+        }
+        else
+        {
+            Debug.Log("Unknown order type.");
+        }
+    }
+
+    private bool IsObjectBOnPlate(GameObject objectB)
+    {
+        if (plate == null) return false;
+        return plate.GetComponent<Collider2D>().bounds.Contains(objectB.transform.position);
+    }
+
+    private void ClearPlate()
+    {
+        if (plate != null)
+        {
+            plate.ClearAllObjects();
+
+            currentObjectB = null;
+            isSnapped = false;
+
+            Debug.Log("Plate cleared.");
+        }
+    }
+} */
+
+using UnityEngine;
+using System.Collections.Generic;
+
+public class ObjectSpawner : MonoBehaviour
+{
+    public GameObject objectBPrefab;
+    public GameObject currentObjectB;
+    public PlateHover plate;
+    private bool isSnapped = false;
+    AudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+    }
+
+
+    void Update()
+    {
+        if (plate.objectsOnPlate.Count >= 6)
+        {
+            Debug.Log("Plate is full. Cannot attach more objects.");
+        }
+        else
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                if (hit.collider != null && hit.collider.gameObject == gameObject)
+                {
+                    if (currentObjectB != null && !isSnapped)
+                    {
+                        Destroy(currentObjectB);
+                    }
+
+                    if (currentObjectB == null || isSnapped)
+                    {
+                        Vector3 spawnPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                        spawnPosition.z = 0;
+                        currentObjectB = Instantiate(objectBPrefab, spawnPosition, Quaternion.identity);
+                        audioManager.PlaySFX(audioManager.pickup); //play sound effect
+                        isSnapped = false;
+                    }
+                }
+            }
+
+            if (currentObjectB != null && !isSnapped)
+            {
+                Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                mousePosition.z = 0;
+                currentObjectB.transform.position = mousePosition;
+            }
+
+            if (currentObjectB != null && plate != null && !isSnapped)
+            {
+                if (IsObjectBOnPlate(currentObjectB))
+                {
+                    Vector3 snapPosition = plate.GetClosestSnapPoint(currentObjectB.transform.position);
+                    currentObjectB.transform.position = snapPosition;
+                    isSnapped = true;
+
+                    plate.SetSnappedPosition(snapPosition);
+                    plate.objectB = currentObjectB;
+
+                    plate.AddObjectToPlate(currentObjectB);
+                    audioManager.PlaySFX(audioManager.plate);
+                }
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            if (currentObjectB != null && !isSnapped)
+            {
+                Destroy(currentObjectB);
+            }
+
+            // Use ValidationManager to handle clearing
+            ValidationManager.Instance.ClearPlate(() =>
+            {
+                ClearPlate();
+            });
+            audioManager.PlaySFX(audioManager.delete);
+        }
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            // Use the centralized manager to handle validation
+            ValidationManager.Instance.ValidateOrder(() =>
+            {
+                ValidateOrder();
+            });
+        }
+    }
+
+    private void ValidateOrder()
+    {
+        CustomerSpawner customerSpawner = FindObjectOfType<CustomerSpawner>();
+        if (customerSpawner == null)
+        {
+            Debug.LogError("CustomerSpawner not found.");
+            return;
+        }
+
+        string speechBubbleOrder = customerSpawner.currentSpeechBubble.name;
+
+        if (plate.objectsOnPlate.Count == 0)
+        {
+            Debug.Log("Validation failed: Plate is empty.");
+            return;
+        }
+
+        if (speechBubbleOrder.Contains("order_2"))
+        {
+            if (plate.objectsOnPlate.Count == 1 && plate.objectsOnPlate[0].name.Contains("roti_canai"))
+            {
+                Debug.Log("Right order for Order 2: Roti Canai!");
+                customerSpawner.RemoveCustomerAndSpeechBubble(true);
+                ClearPlate();
+            }
+            else
+            {
+                Debug.Log("Wrong order for Order 2.");
+                customerSpawner.RemoveCustomerAndSpeechBubble(false);
+            }
+        }
+        else if (speechBubbleOrder.Contains("order_1"))
+        {
+            string[] requiredItems = { "rice", "peanut", "sambal", "anchovies", "cucumber", "egg" };
+
+            if (plate.objectsOnPlate.Count != requiredItems.Length)
+            {
+                Debug.Log("Wrong order for Order 1: Incorrect number of items.");
+                customerSpawner.RemoveCustomerAndSpeechBubble(false);
+                return;
+            }
+
+            List<string> plateItems = new List<string>();
+            foreach (var item in plate.objectsOnPlate)
+            {
+                plateItems.Add(item.name);
+            }
+
+            foreach (string requiredItem in requiredItems)
+            {
+                if (!plateItems.Exists(item => item.Contains(requiredItem)))
+                {
+                    Debug.Log($"Wrong order for Order 1: Missing {requiredItem}.");
+                    customerSpawner.RemoveCustomerAndSpeechBubble(false);
+                    return;
+                }
+            }
+
+            Debug.Log("Right order for Order 1!");
+            customerSpawner.RemoveCustomerAndSpeechBubble(true);
+            ClearPlate();
+        }
+        else
+        {
+            Debug.Log("Unknown order type.");
+        }
+    }
+
+    private bool IsObjectBOnPlate(GameObject objectB)
+    {
+        if (plate == null) return false;
+        return plate.GetComponent<Collider2D>().bounds.Contains(objectB.transform.position);
+    }
+
+    private void ClearPlate()
+    {
+        if (plate != null)
+        {
+            plate.ClearAllObjects();
+
+            currentObjectB = null;
+            isSnapped = false;
+            
 
             Debug.Log("Plate cleared.");
         }
