@@ -2851,6 +2851,51 @@ public class ObjectSpawner : MonoBehaviour
             customerSpawner.RemoveCustomerAndSpeechBubble(true);
             ClearPlate();
         }
+        else if (speechBubbleOrder.Contains("order_3"))
+        {
+            if (plate.objectsOnPlate.Count == 1 && plate.objectsOnPlate[0].name.Contains("char_kway_teow"))
+            {
+                Debug.Log("Right order for Order 3: Char Kway Teow!");
+                customerSpawner.RemoveCustomerAndSpeechBubble(true);
+                ClearPlate();
+            }
+            else
+            {
+                Debug.Log("Wrong order for Order 3.");
+                customerSpawner.RemoveCustomerAndSpeechBubble(false);
+            }
+        }
+        else if (speechBubbleOrder.Contains("order_4"))
+        {
+            string[] requiredItems = { "rice", "peanut", "sambal", "chicken", "cucumber", "egg" };
+
+            if (plate.objectsOnPlate.Count != requiredItems.Length)
+            {
+                Debug.Log("Wrong order for Order 1: Incorrect number of items.");
+                customerSpawner.RemoveCustomerAndSpeechBubble(false);
+                return;
+            }
+
+            List<string> plateItems = new List<string>();
+            foreach (var item in plate.objectsOnPlate)
+            {
+                plateItems.Add(item.name);
+            }
+
+            foreach (string requiredItem in requiredItems)
+            {
+                if (!plateItems.Exists(item => item.Contains(requiredItem)))
+                {
+                    Debug.Log($"Wrong order for Order 1: Missing {requiredItem}.");
+                    customerSpawner.RemoveCustomerAndSpeechBubble(false);
+                    return;
+                }
+            }
+
+            Debug.Log("Right order for Order 1!");
+            customerSpawner.RemoveCustomerAndSpeechBubble(true);
+            ClearPlate();
+        }
         else
         {
             Debug.Log("Unknown order type.");

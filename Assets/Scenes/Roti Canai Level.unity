@@ -27485,6 +27485,7 @@ GameObject:
   - component: {fileID: 1822834318}
   - component: {fileID: 1822834317}
   - component: {fileID: 1822834320}
+  - component: {fileID: 1822834324}
   - component: {fileID: 1822834319}
   - component: {fileID: 1822834321}
   - component: {fileID: 1822834323}
@@ -27708,6 +27709,19 @@ MonoBehaviour:
   toCombineWith: {fileID: 1480919846}
   newObject: {fileID: 1889682023}
   combineSound: {fileID: 8300000, guid: cb0b0e938fc8dba4eb42f0516297b976, type: 3}
+--- !u!114 &1822834324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1822834314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf32668f3f3c82d4e8f0ca6be0ea7ae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  message: Dough
 --- !u!1 &1834614415
 GameObject:
   m_ObjectHideFlags: 0
