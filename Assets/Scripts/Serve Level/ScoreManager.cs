@@ -12,6 +12,7 @@ public class ScoreManager : MonoBehaviour
     public TextMeshProUGUI highscoreText;
     public TextMeshProUGUI livesText;
     public TextMeshProUGUI resultText;
+     public TextMeshProUGUI resultHighScoreText;
     int score = 0;
     int highscore = 0;
     int lives = 3; 
@@ -28,6 +29,7 @@ public class ScoreManager : MonoBehaviour
         highscoreText.text = "High Score: " + highscore.ToString();
         livesText.text = lives.ToString() + " Lives";
         resultText.text = score.ToString() + " Customers";
+        resultHighScoreText.text = "High Score: " + highscore.ToString();
     }
 
     public void AddCustomer()

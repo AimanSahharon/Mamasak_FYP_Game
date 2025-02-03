@@ -2824,20 +2824,20 @@ public class ObjectSpawner : MonoBehaviour
         {
             string[] requiredItems = { "rice", "peanut", "sambal", "anchovies", "cucumber", "egg" };
 
-            if (plate.objectsOnPlate.Count != requiredItems.Length)
+            if (plate.objectsOnPlate.Count != requiredItems.Length) //check number of items on the plate
             {
                 Debug.Log("Wrong order for Order 1: Incorrect number of items.");
                 customerSpawner.RemoveCustomerAndSpeechBubble(false);
                 return;
             }
 
-            List<string> plateItems = new List<string>();
+            List<string> plateItems = new List<string>(); //get the name of the content on the plate
             foreach (var item in plate.objectsOnPlate)
             {
                 plateItems.Add(item.name);
             }
 
-            foreach (string requiredItem in requiredItems)
+            foreach (string requiredItem in requiredItems) //check the name on the plate against the require items
             {
                 if (!plateItems.Exists(item => item.Contains(requiredItem)))
                 {
